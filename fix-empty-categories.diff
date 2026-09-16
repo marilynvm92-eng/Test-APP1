@@ -1,0 +1,56 @@
+diff --git a/server.py b/server.py
+index 3f9a8c8..a69780c 100644
+--- a/server.py
++++ b/server.py
+@@ -110,19 +110,7 @@ class NewsDataProvider:
+     def __init__(self, api_key, opener=urlopen):
+         self.api_key, self.opener = api_key, opener
+ 
+-    def fetch(self, country=None, category=None, query=None):
+-        if not self.api_key:
+-            raise APIError(503, "Falta configurar NEWSDATA_API_KEY en el servidor.")
+-        params = {"apikey": self.api_key}
+-        if country:
+-            params["country"] = country.lower()
+-        if category:
+-            provider_category, keywords = CATEGORIES[category]
+-            params["category"] = provider_category
+-            if keywords:
+-                params["q"] = keywords
+-        if query:
+-            params["q"] = query
++    def _request(self, params):
+         request = Request("https://newsdata.io/api/1/latest?" + urlencode(params),
+                           headers={"Accept": "application/json", "User-Agent": "MyNews/1.0"})
+         try:
+@@ -140,7 +128,29 @@ class NewsDataProvider:
+             raise APIError(502, "No se pudo consultar el proveedor de noticias.") from None
+         if not isinstance(payload, dict) or payload.get("status") != "success" or not isinstance(payload.get("results"), list):
+             raise APIError(502, "Respuesta inválida del proveedor.")
+-        articles = [normalize(raw, category, country) for raw in payload["results"]]
++        return payload["results"]
++
++    def fetch(self, country=None, category=None, query=None):
++        if not self.api_key:
++            raise APIError(503, "Falta configurar NEWSDATA_API_KEY en el servidor.")
++        params = {"apikey": self.api_key}
++        if country:
++            params["country"] = country.lower()
++        keywords = None
++        if category:
++            provider_category, keywords = CATEGORIES[category]
++            params["category"] = provider_category
++            if keywords:
++                params["q"] = keywords
++        if query:
++            params["q"] = query
++        results = self._request(params)
++        # The category+keyword combo can be too narrow for the provider's current
++        # coverage; fall back to the plain category so the feed isn't empty.
++        if not results and keywords and not query:
++            del params["q"]
++            results = self._request(params)
++        articles = [normalize(raw, category, country) for raw in results]
+         return [article for article in articles if article]
+ 
+ 
