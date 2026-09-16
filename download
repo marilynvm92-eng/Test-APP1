@@ -1,0 +1,14 @@
+.DS_Store
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+Configuration/Secrets.xcconfig
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+__pycache__/
+*.pyc

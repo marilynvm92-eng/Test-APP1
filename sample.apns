@@ -1,0 +1,11 @@
+{
+  "Simulator Target Bundle": "com.example.mynews",
+  "aps": {
+    "alert": {
+      "title": "Prueba · Deportes",
+      "body": "Esta es una notificación simulada de MyNews."
+    },
+    "sound": "default"
+  },
+  "articleURL": "https://example.com/mynews-demo"
+}
